@@ -86,6 +86,11 @@ Wireshark bol použitý na:
 - demonštráciu plaintext prenosu údajov
 - porovnanie komunikácie pred a po zapnutí TLS
 
+#### 2.6. Mozzila Thunderbird
+Mozilla Thunderbird bol použitý ako plnohodnotný e-mailový klient na simuláciu
+legitímneho používateľa, ktorý sa autentifikuje voči SMTP serveru pomocou mena
+a hesla.
+
 ### 3. Scenáre útokov a testovania
 #### 3.1. Scenár 1 - Open relay (nesprávna politika relaying-u)
 Podmienky:
@@ -242,7 +247,11 @@ QUIT
 ```
 
 Vráti nás to s chybou, že sa musíme overiť.
+
+![Pokus prihlásenia sa bez overenia po vynútení autentifikácie serverom](images/screenshot3.png)
+
 Pokúsime sa teda overiť, musíme mať však na mysli, že prostredníctvom telnetu dostaneme výzvu na zadanie mena a hesla zakódovanú v base64, a rovnako tak zakódované musia byť meno a heslo aj keď ho do terminálu zadávame (to sú tie divné dva riadky po AUTH LOGIN):
+
 ```
 # terminál/príkazový riadok
 
