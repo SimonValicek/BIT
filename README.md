@@ -20,5 +20,39 @@ S rastúcim významom elektronickej pošty a zmenou bezpečnostného prostredia 
 ### Hop-based model a jeho dôsledky
 Napriek týmto rozšíreniam zostáva SMTP komunikácia založená na tzv. hop-based modeli. To znamená, že bezpečnostné vlastnosti sa uplatňujú vždy len medzi dvoma konkrétnymi účastníkmi komunikácie (napr. klient → server alebo server → server), nie naprieč celým reťazcom doručenia správy.
 
+## Praktická časť – Analýza SMTP komunikácie
+### 1. Architektúra testovacieho prostredia
+### 1.1. Cieľ infraštruktúry
+Cieľom testovacieho prostredia je simulovať realistický scenár SMTP komunikácie, kde:
+- klient/útočník komunikuje so SMTP submission serverom
+- SMTP server následne relaye správu do reálneho e-mailového systému
+- demonštruje sa, že slabina v prvom kroku môže viesť k doručeniu e-mailu koncovému používateľovi
+### 1.2. Logická architektúra
+'''
+┌──────────────────┐
+│ Klient / Útočník │
+│ (telnet, swaks)  │
+└─────────┬────────┘
+          │ SMTP (587)
+          │ (bez TLS / bez AUTH / zlá politika)
+          ▼
+┌──────────────────┐
+│ Postfix SMTP MTA │
+│ (Docker)         │
+└─────────┬────────┘
+          │ SMTP + TLS
+          │ (relay)
+          ▼
+┌──────────────────┐
+│ smtp.gmail.com   │
+│ :587 (secure)    │
+└─────────┬────────┘
+          ▼
+┌──────────────────┐
+│ Inbox príjemcu   │
+│ (Gmail UI)       │
+└──────────────────┘
+'''
+
 ## Záver
 Praktická časť práce ukazuje, že moderné e-mailové systémy sú vo väčšine prípadov správne zabezpečené a dokážu efektívne eliminovať známe slabiny SMTP protokolu. Zároveň však demonštruje, že tieto mechanizmy fungujú len v prípade ich korektného nasadenia a vynútenia na všetkých úrovniach komunikácie.
