@@ -119,5 +119,24 @@ services:
       RELAYHOST_TLS_LEVEL: "encrypt"
 ```
 
+```
+# Útok - terminal
+
+telnet 192.168.0.52 587
+
+EHLO bit.demo
+MAIL FROM:<bitdemo25@gmail.com>
+RCPT TO:<xvaliceks@stuba.sk>
+DATA
+To: xvaliceks@stuba.sk
+From: bitdemo25@gmail.com
+Subject: Step 1
+
+Toto je krok cislo 1 v nasom deme
+.
+QUIT
+```
+
+
 ## Záver
 Praktická časť práce ukazuje, že moderné e-mailové systémy sú vo väčšine prípadov správne zabezpečené a dokážu efektívne eliminovať známe slabiny SMTP protokolu. Zároveň však demonštruje, že tieto mechanizmy fungujú len v prípade ich korektného nasadenia a vynútenia na všetkých úrovniach komunikácie.
