@@ -250,5 +250,11 @@ Toto je krok cislo 2 v nasom deme
 QUIT
 ```
 
+Vďaka nezabezpečenej komunikácii vieme sniffnúť heslo z wiresharku:
+
+
+#### 3.3. Scenár 3 – Chýbajúce TLS (cleartext credentials)
+
+
 ## Záver
 Praktická časť práce ukazuje, že moderné e-mailové systémy sú vo väčšine prípadov správne zabezpečené a dokážu efektívne eliminovať známe slabiny SMTP protokolu. Zároveň však demonštruje, že tieto mechanizmy fungujú len v prípade ich korektného nasadenia a vynútenia na všetkých úrovniach komunikácie.
