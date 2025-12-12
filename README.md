@@ -136,7 +136,119 @@ Toto je krok cislo 1 v nasom deme
 .
 QUIT
 ```
+#### 3.2. Scenár 2 – Vynútenie autentifikácie (AUTH)
+Zmena konfigurácie:
+- vypnutie IP trust-u
+- zapnutie SMTP AUTH
 
+Vytvoríme docker-compose.yml
+```
+# docker-compose.yml
+
+services:
+  postfix:
+    image: boky/postfix
+    container_name: postfix-gmail
+    restart: unless-stopped
+    ports:
+      - "25:25"
+      - "587:587"
+    environment:
+      # Spam friendly
+      ALLOW_EMPTY_SENDER_DOMAINS: "yes"
+
+      POSTFIX_mynetworks: "127.0.0.0/8, 172.16.0.0/12"
+
+      # Require SMTP authentication
+      POSTFIX_smtpd_sasl_auth_enable: "yes"
+      POSTFIX_smtpd_sasl_security_options: "noanonymous"
+      POSTFIX_smtpd_sasl_local_domain: ""
+
+      # Relay policy: auth required for non-local domains
+      POSTFIX_smtpd_relay_restrictions: "permit_sasl_authenticated,reject_unauth_destination"
+      POSTFIX_smtpd_recipient_restrictions: "permit_sasl_authenticated,reject"
+
+      # Postfix -> Gmail relay settings
+      RELAYHOST: "[smtp.gmail.com]:587"
+      RELAYHOST_USERNAME: "${GMAIL_USER}"
+      RELAYHOST_PASSWORD: "${GMAIL_PASSWORD}"
+      RELAYHOST_TLS_LEVEL: "encrypt"
+```
+
+Následne musíme rozbehať databázu vo vnútri kontajnera, aby nám bolo umožnené vytvoriť usera, s ktorým sa budeme následne vedieť prihlásiť do Postfixu.
+
+Na to nám slúžia nasledovné príkazy:
+  
+```
+# terminál/príkazový riadok
+
+ docker exec -it postfix-gmail sh
+
+
+rm -f /etc/sasldb2
+rm -f /var/spool/postfix/etc/sasldb2
+HOST=$(postconf -h myhostname)
+echo $HOST
+
+# vytvoríme usera mario
+saslpasswd2 -c -u "$HOST" mario
+
+# dostaneme výzvu na zadanie hesla 
+# krokodil123 je naše heslo
+krokodil123
+
+# dostaneme výzvu na potvrdenie hesla
+krokodil123
+
+mkdir -p /var/spool/postfix/etc
+cp /etc/sasldb2 /var/spool/postfix/etc/sasldb2
+chown postfix:postfix /etc/sasldb2
+chmod 600 /etc/sasldb2
+chown postfix:postfix /var/spool/postfix/etc/sasldb2
+chmod 600 /var/spool/postfix/etc/sasldb2
+
+postfix stop
+postfix start
+```
+
+Pokúsime sa spáchať útok ako predtým:
+```
+# terminál/príkazový riadok
+
+telnet 192.168.0.52 587
+
+EHLO bit.demo
+MAIL FROM:<bitdemo25@gmail.com>
+RCPT TO:<xvaliceks@stuba.sk>
+DATA
+To: xvaliceks@stuba.sk
+From: bitdemo25@gmail.com
+Subject: Step 2
+
+Toto je krok cislo 2 v nasom deme
+.
+QUIT
+```
+
+Vráti nás to s chybou, že sa musíme overiť.
+Pokúsime sa teda overiť:
+```
+telnet 192.168.0.52 587
+EHLO bit.demo
+AUTH LOGIN
+bWFyaW8=
+a3Jva29kaWwxMjM=
+MAIL FROM:<bitdemo25@gmail.com>
+RCPT TO:<xvaliceks@stuba.sk>
+DATA
+To: xvaliceks@stuba.sk
+From: bitdemo25@gmail.com
+Subject: Step 2
+
+Toto je krok cislo 2 v nasom deme
+.
+QUIT
+```
 
 ## Záver
 Praktická časť práce ukazuje, že moderné e-mailové systémy sú vo väčšine prípadov správne zabezpečené a dokážu efektívne eliminovať známe slabiny SMTP protokolu. Zároveň však demonštruje, že tieto mechanizmy fungujú len v prípade ich korektného nasadenia a vynútenia na všetkých úrovniach komunikácie.
