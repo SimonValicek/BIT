@@ -28,7 +28,7 @@ Cieľom testovacieho prostredia je simulovať realistický scenár SMTP komunik�
 - SMTP server následne relaye správu do reálneho e-mailového systému
 - demonštruje sa, že slabina v prvom kroku môže viesť k doručeniu e-mailu koncovému používateľovi
 ### 1.2. Logická architektúra
-'''
+```
 ┌──────────────────┐
 │ Klient / Útočník │
 │ (telnet, swaks)  │
@@ -52,7 +52,7 @@ Cieľom testovacieho prostredia je simulovať realistický scenár SMTP komunik�
 │ Inbox príjemcu   │
 │ (Gmail UI)       │
 └──────────────────┘
-'''
+```
 
 ## Záver
 Praktická časť práce ukazuje, že moderné e-mailové systémy sú vo väčšine prípadov správne zabezpečené a dokážu efektívne eliminovať známe slabiny SMTP protokolu. Zároveň však demonštruje, že tieto mechanizmy fungujú len v prípade ich korektného nasadenia a vynútenia na všetkých úrovniach komunikácie.
