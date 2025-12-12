@@ -138,6 +138,7 @@ QUIT
 ```
 
 Výsledok
+
 ![Open relay attack](images/screenshot1.png)
 
 #### 3.2. Scenár 2 – Vynútenie autentifikácie (AUTH)
