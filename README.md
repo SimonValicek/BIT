@@ -90,6 +90,9 @@ Wireshark bol použitý na:
 #### 3.1. Scenár 1 - Open relay (nesprávna politika relaying-u)
 Podmienky:
 - trusted IP adresy nepotrebujú autentifikáciu
+
+Náš Postfix server nakonfigurujeme nasledovne a naštartujeme Docker kontajner.
+
 ```
 # docker-compose.yml
 
@@ -119,8 +122,10 @@ services:
       RELAYHOST_TLS_LEVEL: "encrypt"
 ```
 
+Otvoríme si terminál alebo iný príkazový riadok, ktorý podporuje telnet a spustíme nasledovnú sériu príkazov.
+
 ```
-# Útok - terminal
+# terminál/príkazový riadok
 
 telnet 192.168.0.52 587
 
@@ -137,9 +142,10 @@ Toto je krok cislo 1 v nasom deme
 QUIT
 ```
 
-Výsledok
+Útok prebehol úspešne, výsledkom je nový e-mail v schránke koncového používateľa. Nepotrebovali sme sa pritom ani autentifikovať. Tento typ útoku môže teda pri súčasnej konfigurácii vykonať ktokoľvek s prístupom do siete.
 
-![Open relay attack](images/screenshot1.png)
+![Open relay útok](images/screenshot1.png)
+![Výsledok open relay útoku](images/screenshot2.png)
 
 #### 3.2. Scenár 2 – Vynútenie autentifikácie (AUTH)
 Zmena konfigurácie:
