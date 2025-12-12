@@ -22,12 +22,12 @@ Napriek týmto rozšíreniam zostáva SMTP komunikácia založená na tzv. hop-b
 
 ## Praktická časť – Analýza SMTP komunikácie
 ### 1. Architektúra testovacieho prostredia
-### 1.1. Cieľ infraštruktúry
+#### 1.1. Cieľ infraštruktúry
 Cieľom testovacieho prostredia je simulovať realistický scenár SMTP komunikácie, kde:
 - klient/útočník komunikuje so SMTP submission serverom
 - SMTP server následne relaye správu do reálneho e-mailového systému
 - demonštruje sa, že slabina v prvom kroku môže viesť k doručeniu e-mailu koncovému používateľovi
-### 1.2. Logická architektúra
+#### 1.2. Logická architektúra
 ```
 ┌──────────────────┐
 │ Klient / Útočník │
@@ -53,6 +53,12 @@ Cieľom testovacieho prostredia je simulovať realistický scenár SMTP komunik�
 │    (Gmail UI)    │
 └──────────────────┘
 ```
+### 2. Použité technológie a nástroje
+#### 2.1. Docker Compose
+Docker Compose bol použitý na:
+- rýchle nasadenie SMTP servera
+- izoláciu testovacieho prostredia
+- jednoduché opakovanie experimentov
 
 ## Záver
 Praktická časť práce ukazuje, že moderné e-mailové systémy sú vo väčšine prípadov správne zabezpečené a dokážu efektívne eliminovať známe slabiny SMTP protokolu. Zároveň však demonštruje, že tieto mechanizmy fungujú len v prípade ich korektného nasadenia a vynútenia na všetkých úrovniach komunikácie.
