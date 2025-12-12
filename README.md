@@ -182,7 +182,7 @@ Na to nám slúžia nasledovné príkazy:
 ```
 # terminál/príkazový riadok
 
- docker exec -it postfix-gmail sh
+docker exec -it postfix-gmail sh
 
 
 rm -f /etc/sasldb2
@@ -231,9 +231,12 @@ QUIT
 ```
 
 Vráti nás to s chybou, že sa musíme overiť.
-Pokúsime sa teda overiť:
+Pokúsime sa teda overiť, musíme mať však na mysli, že prostredníctvom telnetu dostaneme výzvu na zadanie mena a hesla zakódovanú v base64, a rovnako tak zakódované musia byť meno a heslo aj keď ho do terminálu zadávame (to sú tie divné dva riadky po AUTH LOGIN):
 ```
+# terminál/príkazový riadok
+
 telnet 192.168.0.52 587
+
 EHLO bit.demo
 AUTH LOGIN
 bWFyaW8=
