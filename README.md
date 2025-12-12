@@ -87,6 +87,37 @@ Wireshark bol použitý na:
 - porovnanie komunikácie pred a po zapnutí TLS
 
 ### 3. Scenáre útokov a testovania
+#### 3.1. Scenár 1 - Open relay (nesprávna politika relaying-u)
+Podmienky:
+- trusted IP adresy nepotrebujú autentifikáciu
+```
+# docker-compose.yml
+
+services:
+  postfix:
+    image: boky/postfix
+    container_name: postfix-gmail
+    restart: unless-stopped
+    ports:
+      - "25:25"
+      - "587:587"
+    environment:
+      # Spam friendly
+      ALLOW_EMPTY_SENDER_DOMAINS: "yes"
+
+      # TRUST TOO MUCH → weakness (ask ChatGPT if weakness or vulnerability)
+      POSTFIX_mynetworks: "192.168.0.0/16, 172.16.0.0/12, 172.18.0.0/16"
+
+      # Classic open relay logic
+      POSTFIX_smtpd_relay_restrictions: "permit_mynetworks,reject_unauth_destination"
+      POSTFIX_smtpd_recipient_restrictions: "permit_mynetworks,reject"
+
+      # Postfix -> Gmail relay settings
+      RELAYHOST: "[smtp.gmail.com]:587"
+      RELAYHOST_USERNAME: "${GMAIL_USER}"
+      RELAYHOST_PASSWORD: "${GMAIL_PASSWORD}"
+      RELAYHOST_TLS_LEVEL: "encrypt"
+```
 
 ## Záver
 Praktická časť práce ukazuje, že moderné e-mailové systémy sú vo väčšine prípadov správne zabezpečené a dokážu efektívne eliminovať známe slabiny SMTP protokolu. Zároveň však demonštruje, že tieto mechanizmy fungujú len v prípade ich korektného nasadenia a vynútenia na všetkých úrovniach komunikácie.
