@@ -60,5 +60,33 @@ Docker Compose bol použitý na:
 - izoláciu testovacieho prostredia
 - jednoduché opakovanie experimentov
 
+#### 2.2. Postfix SMTP server
+Postfix bol zvolený ako:
+- reálne používaný SMTP server
+- plne konfigurovateľný MTA
+- vhodný na demonštráciu nesprávnych konfigurácií
+- použitý image - **boky/postfix**
+
+#### 2.3. Gmail SMTP Relay
+Na odosielanie e-mailov do reálneho inboxu bol použitý Gmail SMTP relay.
+Postup:
+- vytvorenie účtu (alebo použitie existujúceho)
+- generovanie App Password pre SMTP prístup
+- konfigurácia Postfix relay hosta
+
+#### 2.4. Telnet
+Telnet bol použitý ako:
+- jednoduchý TCP klient
+- nástroj na manuálne odosielanie SMTP príkazov
+- spôsob demonštrácie plaintext komunikácie
+
+#### 2.5. Wireshark
+Wireshark bol použitý na:
+- zachytávanie SMTP komunikácie
+- demonštráciu plaintext prenosu údajov
+- porovnanie komunikácie pred a po zapnutí TLS
+
+### 3. Scenáre útokov a testovania
+
 ## Záver
 Praktická časť práce ukazuje, že moderné e-mailové systémy sú vo väčšine prípadov správne zabezpečené a dokážu efektívne eliminovať známe slabiny SMTP protokolu. Zároveň však demonštruje, že tieto mechanizmy fungujú len v prípade ich korektného nasadenia a vynútenia na všetkých úrovniach komunikácie.
