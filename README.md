@@ -227,7 +227,8 @@ postfix stop
 postfix start
 ```
 
-Pokúsime sa spáchať útok ako predtým:
+Pokúsime sa spáchať útok ako predtým, čím si overíme, či sa nastavenia autentifikácie aplikovali správne.
+
 ```
 # terminál/príkazový riadok
 
@@ -249,6 +250,13 @@ QUIT
 Vráti nás to s chybou, že sa musíme overiť.
 
 ![Pokus prihlásenia sa bez overenia po vynútení autentifikácie serverom](images/screenshot3.png)
+
+Pokúsime sa teda, prihlásiť pomocou údajov, ktoré sme si vytvorili vyššie v databáze vo vnútri kontajnera.
+V našom prípade, to budú údaje username:password → mario:krokodil123. Na prihlásenie sa do účtu použijeme klienta Mozilla Thunderbird. Návod, ako sa prihlásiť do klienta nájdeme [tu](manuals/README.md)
+
+Po úspešnom prihlásení sa do Mozilly Thunderbird, pošleme skúšobný mail.
+
+![Email z Mozzila Thunderbird → Postfix → smtp.gmail:587 → xvaliceks inbox](images/screenshot9.png)
 
 Pokúsime sa teda overiť, musíme mať však na mysli, že prostredníctvom telnetu dostaneme výzvu na zadanie mena a hesla zakódovanú v base64, a rovnako tak zakódované musia byť meno a heslo aj keď ho do terminálu zadávame (to sú tie divné dva riadky po AUTH LOGIN):
 
@@ -277,6 +285,65 @@ Vďaka nezabezpečenej komunikácii vieme sniffnúť heslo z wiresharku:
 
 
 #### 3.3. Scenár 3 – Chýbajúce TLS (cleartext credentials)
+```
+services:
+  postfix:
+    image: boky/postfix
+    container_name: postfix-gmail
+    restart: unless-stopped
+    ports:
+      - "25:25"
+      - "587:587"
+    environment:
+      # Spam friendly
+      ALLOW_EMPTY_SENDER_DOMAINS: "yes"
+
+      POSTFIX_mynetworks: "127.0.0.0/8, 172.16.0.0/12"
+
+      # Require SMTP authentication
+      POSTFIX_smtpd_sasl_auth_enable: "yes"
+      POSTFIX_smtpd_sasl_security_options: "noanonymous"
+      POSTFIX_smtpd_sasl_local_domain: ""
+
+      # Relay policy: auth required for non-local domains
+      POSTFIX_smtpd_relay_restrictions: "permit_sasl_authenticated,reject_unauth_destination"
+      POSTFIX_smtpd_recipient_restrictions: "permit_mynetworks,permit_sasl_authenticated,reject"
+
+      # Postfix -> Gmail relay settings
+      RELAYHOST: "[smtp.gmail.com]:587"
+      RELAYHOST_USERNAME: "${GMAIL_USER}"
+      RELAYHOST_PASSWORD: "${GMAIL_PASSWORD}"
+      RELAYHOST_TLS_LEVEL: "encrypt"
+
+      # TLS inbound enforcement
+      SMTPD_USE_TLS: "yes"
+      SMTPD_TLS_SECURITY_LEVEL: "encrypt"
+      ALLOW_INSECURE_AUTH: "false"
+
+      POSTFIX_smtpd_delay_reject: "no"
+
+
+      # # Enable SASL authentication
+      # POSTFIX_smtpd_sasl_auth_enable: "yes"
+      # POSTFIX_smtpd_sasl_security_options: "noanonymous"
+      # POSTFIX_smtpd_sasl_local_domain: ""
+
+      # # Allow relay after authentication
+      # POSTFIX_smtpd_relay_restrictions: "permit_sasl_authenticated,reject_unauth_destination"
+
+      # POSTFIX_smtpd_recipient_restrictions: "permit_sasl_authenticated,reject"
+      
+      # ALLOW_INSECURE_AUTH: "true"
+      # SMTP_AUTH_METHODS: "plain,login"
+
+      # Disable TLS inbound
+      # SMTPD_USE_TLS: "no"
+
+
+      # AUTH METHODS (TLS not enforced yet)
+      # ALLOW_INSECURE_AUTH: "true"
+      # SMTP_AUTH_METHODS: "plain,login"
+```   
 
 
 ## Záver
