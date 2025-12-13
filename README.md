@@ -258,7 +258,18 @@ Po úspešnom prihlásení sa do Mozilly Thunderbird, pošleme skúšobný mail.
 
 ![Email z Mozzila Thunderbird → Postfix → smtp.gmail:587 → xvaliceks inbox](images/screenshot9.png)
 
-Pokúsime sa teda overiť, musíme mať však na mysli, že prostredníctvom telnetu dostaneme výzvu na zadanie mena a hesla zakódovanú v base64, a rovnako tak zakódované musia byť meno a heslo aj keď ho do terminálu zadávame (to sú tie divné dva riadky po AUTH LOGIN):
+Ako vidíme na obrázku vyššie, e-mail bol po autentifikácii odoslaný úspešne. Teraz sa pokúsime simulovať správanie útočníka a odchytiť nešifrovaný komunikáciu, spolu s prihlasovacími údajmi.
+
+Otvoríme si Wireshark, vyberieme príslušnú sieť a zadáme filter **smtp || tcp.port == 587**
+
+![Zachytené username v plaintexte vo Wiresharku](images/screenshot6.png)
+![Zachytené password v plaintexte vo Wiresharku](images/screenshot7.png)
+
+Tieto údaje sú zakódované v base64, čo nám ale vôbec nevadí, nakoľko ich budeme prostredníctvom telnetu zakódované zadávať do terminálu. Pre demonštráciu toho, že sa jedná o tie isté údaje, si ich však dekódujeme.
+
+![Dekódované údaje zachytené z Wiresharku](images/screenshot15.png)
+
+Následne, keď máme zachytené (aj dekódované) prihlasovacie údaje, pokúsime sa simulovať správanie útočníka a použijeme ich pri prihlasovaní telnetom. Musíme mať však na pamäti, že prostredníctvom telnetu dostaneme výzvu na zadanie mena a hesla zakódovanú v base64, a rovnako tak musia byť zakódované prihlasovacie údaje, keď ich do terminálu zapisujeme (to sú tie divné dva riadky po AUTH LOGIN).
 
 ```
 # terminál/príkazový riadok
@@ -281,7 +292,11 @@ Toto je krok cislo 2 v nasom deme
 QUIT
 ```
 
-Vďaka nezabezpečenej komunikácii vieme sniffnúť heslo z wiresharku:
+Útok prostredníctvom telnetu prebehol úspešne, čo malo za následok doručený mail v inboxe obete.
+
+![Úspešný útok telnetom pomocou credentials.](images/screenshot4.png)
+![Dôsledok útoku, mail doručený do inboxu "obete".](images/screenshot5.png)
+
 
 
 #### 3.3. Scenár 3 – Chýbajúce TLS (cleartext credentials)
