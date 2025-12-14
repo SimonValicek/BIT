@@ -218,9 +218,9 @@ krokodil123
 
 mkdir -p /var/spool/postfix/etc
 cp /etc/sasldb2 /var/spool/postfix/etc/sasldb2
-chown root:postfix /etc/sasldb2
+chown postfix:postfix /etc/sasldb2
 chmod 600 /etc/sasldb2
-chown root:postfix /var/spool/postfix/etc/sasldb2
+chown postfix:postfix /var/spool/postfix/etc/sasldb2
 chmod 600 /var/spool/postfix/etc/sasldb2
 
 postfix stop
