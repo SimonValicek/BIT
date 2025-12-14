@@ -14,7 +14,7 @@ REÁLNE PROSTREDIE (server ↔ server)           LAB SCENÁR (klient → Postfix
           ▼                                            ▼
 ┌──────────────────┐                         ┌──────────────────┐
 │ SMTP server      │                         │ Postfix SMTP MTA │
-│ (organizácia)    │                         │    (Docker)      │
+│                  │                         │    (Docker)      │
 └─────────┬────────┘                         └─────────┬────────┘
           │ server ↔ server SMTP (port 25)             │ klient → server SMTP (port 587)
           │ bez loginu                                 │ AUTH (gmail účet)
@@ -27,7 +27,7 @@ REÁLNE PROSTREDIE (server ↔ server)           LAB SCENÁR (klient → Postfix
           ▼                                            ▼
 ┌──────────────────┐                         ┌──────────────────┐
 │ SMTP server      │                         │ smtp.gmail.com   │
-│ (cudzí server)   │                         │      :587        │
+│                  │                         │      :587        │
 └─────────┬────────┘                         └─────────┬────────┘
           ▼                                            ▼
 ┌──────────────────┐                         ┌──────────────────┐
