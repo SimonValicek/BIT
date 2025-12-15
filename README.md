@@ -33,7 +33,7 @@ prostredie navrhnuté tak, aby Postfix server vystupoval voči cieľovému
 mailovému systému (Gmail) v roli SMTP klienta, nie ako plnohodnotný
 server-to-server MTA.
 
-Ak by Postfix v tomto scenári fungoval ako verejne dostupný SMTP server,
+Ak by Postfix v tomto scenári figuroval ako verejne dostupný SMTP server,
 bolo by nevyhnutné riešiť ďalšie mechanizmy, ako sú verejná IP adresa,
 PTR záznamy, SPF a DKIM politiky, reputácia servera a ďalšie ochranné
 mechanizmy používané modernými poskytovateľmi e-mailových služieb.
@@ -112,10 +112,14 @@ a hesla.
 
 ### 3. Scenáre útokov a testovania
 #### 3.1. Scenár 1 - Open relay (nesprávna politika relaying-u)
-Podmienky:
-- trusted IP adresy nepotrebujú autentifikáciu
+V tomto scenári demonštrujeme bezpečnostnú slabinu spôsobenú nesprávne
+nastavenou politikou relaying-u, pri ktorej server dôveruje širokému rozsahu
+IP adries a nevyžaduje autentifikáciu od klienta.
 
-Náš Postfix server nakonfigurujeme nasledovne a naštartujeme Docker kontajner.
+Postfix server je nakonfigurovaný tak, že všetky spojenia pochádzajúce
+z IP adries definovaných v parametri `mynetworks` sú považované za dôveryhodné.
+Takýto prístup umožňuje odosielanie e-mailov bez použitia mechanizmu SMTP AUTH,
+čo v praxi vedie k správaniu typu open relay.
 
 ```
 # docker-compose.yml
@@ -145,7 +149,10 @@ services:
       RELAYHOST_TLS_LEVEL: "encrypt"
 ```
 
-Otvoríme si terminál alebo iný príkazový riadok, ktorý podporuje telnet a spustíme nasledovnú sériu príkazov.
+Po spustení SMTP servera sa útočník pripojí na submission port (587) pomocou
+nástroja telnet a manuálne vykoná štandardnú SMTP konverzáciu. Server akceptuje
+príkazy `MAIL FROM` a `RCPT TO` bez požiadavky na autentifikáciu a následne
+relayne správu do externého mailového systému.
 
 ```
 # terminál/príkazový riadok
@@ -165,17 +172,24 @@ Toto je krok cislo 1 v nasom deme
 QUIT
 ```
 
-Útok prebehol úspešne, výsledkom je nový e-mail v schránke koncového používateľa. Nepotrebovali sme sa pritom ani autentifikovať. Tento typ útoku môže teda pri súčasnej konfigurácii vykonať ktokoľvek s prístupom do siete.
+Výsledkom je úspešné doručenie e-mailu do schránky koncového používateľa
+bez akejkoľvek formy overenia odosielateľa. Pri danej konfigurácii môže tento
+typ zneužitia vykonať ktokoľvek s prístupom do siete, v ktorej sa server nachádza.
 
 ![Open relay útok](images/screenshot1.png)
 ![Výsledok open relay útoku](images/screenshot2.png)
 
 #### 3.2. Scenár 2 – Vynútenie autentifikácie (AUTH)
-Zmena konfigurácie:
-- vypnutie IP trust-u
-- zapnutie SMTP AUTH
+V tomto scenári demonštrujeme zavedenie mechanizmu SMTP AUTH ako reakciu na
+nesprávnu politiku relaying-u z predchádzajúceho scenára. Cieľom je zabrániť
+neautorizovanému odosielaniu e-mailov vypnutím dôvery voči IP adresám a
+vynútením autentifikácie používateľa.
 
-Vytvoríme docker-compose.yml
+Postfix server je nakonfigurovaný tak, aby umožňoval relaying iba
+autentifikovaným klientom. Spojenia pochádzajúce z nedôveryhodných IP adries
+sú bez platných prihlasovacích údajov odmietnuté. Týmto nastavením je
+eliminované správanie typu open relay.
+
 ```
 # docker-compose.yml
 
@@ -209,9 +223,8 @@ services:
       RELAYHOST_TLS_LEVEL: "encrypt"
 ```
 
-Následne musíme rozbehať databázu vo vnútri kontajnera, aby nám bolo umožnené vytvoriť usera, s ktorým sa budeme následne vedieť prihlásiť do Postfixu.
-
-Na to nám slúžia nasledovné príkazy:
+Následne je vytvorený lokálny používateľ v SASL databáze Postfix servera,
+ktorý slúži na simuláciu legitímneho klienta. 
   
 ```
 # terminál/príkazový riadok
@@ -227,11 +240,7 @@ echo $HOST
 # vytvoríme usera mario
 saslpasswd2 -c -u "$HOST" mario
 
-# dostaneme výzvu na zadanie hesla 
-# krokodil123 je naše heslo
-krokodil123
-
-# dostaneme výzvu na potvrdenie hesla
+# dostaneme výzvu na zadanie hesla, kde 'krokodil123' bude naše heslo
 krokodil123
 
 mkdir -p /var/spool/postfix/etc
@@ -245,7 +254,7 @@ postfix stop
 postfix start
 ```
 
-Pokúsime sa spáchať útok ako predtým, čím si overíme, či sa nastavenia autentifikácie aplikovali správne.
+Pokúsime sa "zaútočiť" na server rovnako, ako v predošlom kroku.
 
 ```
 # terminál/príkazový riadok
@@ -265,14 +274,17 @@ Toto je krok cislo 2 v nasom deme
 QUIT
 ```
 
-Vráti nás to s chybou, že sa musíme overiť.
+Po aplikovaní konfigurácie sa najprv overí, že pokus o odoslanie e-mailu
+bez autentifikácie je serverom zamietnutý. SMTP server v tomto prípade
+vyžaduje úspešné overenie používateľa prostredníctvom mechanizmu SMTP AUTH.
+
 
 ![Pokus prihlásenia sa bez overenia po vynútení autentifikácie serverom](images/screenshot3.png)
 
 Pokúsime sa teda, prihlásiť pomocou údajov, ktoré sme si vytvorili vyššie v databáze vo vnútri kontajnera.
 V našom prípade, to budú údaje username:password → mario:krokodil123. Na prihlásenie sa do účtu použijeme klienta Mozilla Thunderbird. 
 
-Po úspešnom prihlásení sa do Mozilly Thunderbird, pošleme skúšobný mail.
+Po úspešnom prihlásení sa do Mozilly Thunderbird, pošleme skúšobný e-mail.
 
 ![Email z Mozilla Thunderbird → Postfix → smtp.gmail:587 → xvaliceks inbox](images/screenshot9.png)
 
@@ -288,7 +300,7 @@ Tieto údaje sú zakódované v base64, čo nám ale vôbec nevadí, nakoľko ic
 
 ![Dekódované údaje zachytené z Wiresharku](images/screenshot15.png)
 
-Následne, keď máme zachytené (aj dekódované) prihlasovacie údaje, pokúsime sa simulovať správanie útočníka a použijeme ich pri prihlasovaní telnetom. Musíme mať však na pamäti, že prostredníctvom telnetu dostaneme výzvu na zadanie mena a hesla zakódovanú v base64, a rovnako tak musia byť zakódované prihlasovacie údaje, keď ich do terminálu zapisujeme (to sú tie divné dva riadky po AUTH LOGIN).
+Následne, keď máme zachytené (aj dekódované) prihlasovacie údaje, pokúsime sa simulovať správanie útočníka a použijeme ich pri prihlasovaní telnetom. Musíme mať však na pamäti, že prostredníctvom telnetu dostaneme výzvu na zadanie mena a hesla zakódovanú v base64, a rovnako tak musia byť zakódované prihlasovacie údaje, keď ich do terminálu zapisujeme (to sú tie "divné" dva riadky po AUTH LOGIN).
 
 ```
 # terminál/príkazový riadok
@@ -311,11 +323,10 @@ Toto je krok cislo 2 v nasom deme
 QUIT
 ```
 
-Útok prostredníctvom telnetu prebehol úspešne, čo malo za následok doručený mail v inboxe obete.
+"Útok" prostredníctvom telnetu prebehol úspešne, čo malo za následok doručený e-mail v inboxe obete.
 
 ![Úspešný útok telnetom pomocou credentials.](images/screenshot4.png)
 ![Dôsledok útoku, mail doručený do inboxu "obete".](images/screenshot5.png)
-
 
 
 #### 3.3. Scenár 3 – Chýbajúce TLS (cleartext credentials)
@@ -357,7 +368,10 @@ services:
       POSTFIX_smtp_tls_security_level: "encrypt"
 ```
 
-Následne sa opäť pokúsime o rovnaké prihlásenie, čím si overíme, že sa nastavenia aplikovali správne.
+Po aplikovaní konfigurácie sa pokúsime o autentifikáciu rovnakým spôsobom
+ako v predchádzajúcom scenári. Pri použití nástroja telnet server v odpovedi
+neponúkne možnosť mechanizmu AUTH, čím signalizuje, že autentifikácia je
+podmienená aktívnym TLS spojením.
 
 ```
 # terminál/príkazový riadok
@@ -370,8 +384,18 @@ bWFyaW8=
 a3Jva29kaWwxMjM=
 ```
 
-Vidíme, že po inicializovaní konverzácie nedostaneme v odpovedi servera možnosť 250-AUTH. Následne, keď sa napriek tomu pokúsime prihlásiť, dostaneme error. Pokúsime sa teda nadviazať šifrované spojenie, na čo nás telnet odmietne, keďže nie je na to kapacitne vybavený. Skúsime to teda pomocou openssl a porovnáme rozdiely.
+Pri použití nástroja telnet server v odpovedi
+neponúkne možnosť mechanizmu AUTH, čím signalizuje, že autentifikácia je
+podmienená aktívnym TLS spojením. 
+
+Keďže telnet nepodporuje nadviazanie šifrovaného spojenia pomocou STARTTLS,
+pokus o autentifikáciu zlyhá. Tento stav potvrdzuje, že server správne
+vynucuje bezpečnostné vlastnosti spojenia.
+
 ![Telnet - autentifikacie bez STARTTLS -> error.](images/screenshot16.png)
+
+Na nadviazanie šifrovaného spojenia preto použijeme nástroj `openssl`,
+ktorý umožňuje inicializovať SMTP komunikáciu so zapnutým STARTTLS.
 
 ```
 # GitBash
@@ -379,8 +403,10 @@ Vidíme, že po inicializovaní konverzácie nedostaneme v odpovedi servera mož
 openssl s_client -starttls smtp -connect 192.168.0.52:587
 ```
 
-Následne, po nazdviazaní šifrovaného spojenia prostrednísctvom openssl so STARTTLS, vidíme možnosť autentifikácie, ktorá nám bola predtým zahalená.
-![Openssl so STARTTLS.](images/screenshot16.png)
+Po úspešnom nadviazaní šifrovaného spojenia server sprístupní autentifikačné
+mechanizmy, ktoré boli v predchádzajúcom prípade nedostupné.
+
+![Openssl so STARTTLS.](images/screenshot17.png)
 
 Opäť sa prihlásime.
 
@@ -390,8 +416,18 @@ bWFyaW8=
 a3Jva29kaWwxMjM=
 ```
 
-Následne vo Wiresharku vidíme, že komunikácia už prebieha šifrovane pomocou TLSv1.3 a nie je možné jednoducho odchytiť jej obsah ako predtým.
+Po úspešnej autentifikácii je komunikácia medzi klientom a SMTP serverom
+chránená pomocou TLS (TLSv1.3). Zachytené pakety vo Wiresharku sú šifrované
+a neumožňujú jednoduché odčítanie obsahu ani prihlasovacích údajov, čím je
+odstránená slabina demonštrovaná v predchádzajúcom scenári.
+
+![Wireshark TLSv1.3.](images/screenshot18.png)
 
 
 ## Záver
 Praktická časť práce ukazuje, že moderné e-mailové systémy sú vo väčšine prípadov správne zabezpečené a dokážu efektívne eliminovať známe slabiny SMTP protokolu. Zároveň však demonštruje, že tieto mechanizmy fungujú len v prípade ich korektného nasadenia a vynútenia na všetkých úrovniach komunikácie.
+
+Výsledky experimentov potvrdzujú, že nesprávna konfigurácia SMTP servera,
+najmä v oblasti relaying politiky, autentifikácie a šifrovania, môže viesť
+k úspešnému zneužitiu aj v prostredí, kde je cieľový e-mailový systém
+konfigurovaný bezpečne.
