@@ -4,55 +4,26 @@ services:
     container_name: postfix-gmail
     restart: unless-stopped
     ports:
-      - "25:25"
       - "587:587"
     environment:
       # Spam friendly
       ALLOW_EMPTY_SENDER_DOMAINS: "yes"
 
-      POSTFIX_mynetworks: "127.0.0.0/8, 172.16.0.0/12"
+      POSTFIX_mynetworks: "192.168.0.0/16, 127.0.0.0/8, 172.16.0.0/12"
 
-      # Require SMTP authentication
+      # GLOBAL smtpd settings
       POSTFIX_smtpd_sasl_auth_enable: "yes"
-      POSTFIX_smtpd_sasl_security_options: "noanonymous"
-      POSTFIX_smtpd_sasl_local_domain: ""
+      POSTFIX_smtpd_tls_auth_only: "yes"
+     
+      # Submission service (587)
+      ENABLE_SUBMISSION: "yes"
+      POSTFIX_submission_smtpd_tls_security_level: "encrypt"
+      POSTFIX_submission_smtpd_tls_auth_only: "yes"
+      POSTFIX_submission_smtpd_sasl_auth_enable: "yes"
+      POSTFIX_submission_smtpd_relay_restrictions: "permit_sasl_authenticated,reject"
 
-      # Relay policy: auth required for non-local domains
-      POSTFIX_smtpd_relay_restrictions: "permit_sasl_authenticated,reject_unauth_destination"
-      POSTFIX_smtpd_recipient_restrictions: "permit_mynetworks,permit_sasl_authenticated,reject"
-
-      # Postfix -> Gmail relay settings
+      # Gmail relay
       RELAYHOST: "[smtp.gmail.com]:587"
       RELAYHOST_USERNAME: "${GMAIL_USER}"
       RELAYHOST_PASSWORD: "${GMAIL_PASSWORD}"
-      RELAYHOST_TLS_LEVEL: "encrypt"
-
-      # TLS inbound enforcement
-      SMTPD_USE_TLS: "yes"
-      SMTPD_TLS_SECURITY_LEVEL: "encrypt"
-      ALLOW_INSECURE_AUTH: "false"
-
-      POSTFIX_smtpd_delay_reject: "no"
-
-
-      # # Enable SASL authentication
-      # POSTFIX_smtpd_sasl_auth_enable: "yes"
-      # POSTFIX_smtpd_sasl_security_options: "noanonymous"
-      # POSTFIX_smtpd_sasl_local_domain: ""
-
-      # # Allow relay after authentication
-      # POSTFIX_smtpd_relay_restrictions: "permit_sasl_authenticated,reject_unauth_destination"
-
-      # POSTFIX_smtpd_recipient_restrictions: "permit_sasl_authenticated,reject"
-      
-      # ALLOW_INSECURE_AUTH: "true"
-      # SMTP_AUTH_METHODS: "plain,login"
-
-      # Disable TLS inbound
-      # SMTPD_USE_TLS: "no"
-
-
-      # AUTH METHODS (TLS not enforced yet)
-      # ALLOW_INSECURE_AUTH: "true"
-      # SMTP_AUTH_METHODS: "plain,login"
-      
+      POSTFIX_smtp_tls_security_level: "encrypt"
