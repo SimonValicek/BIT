@@ -150,9 +150,7 @@ services:
 ```
 
 Po spustení SMTP servera sa útočník pripojí na submission port (587) pomocou
-nástroja telnet a manuálne vykoná štandardnú SMTP konverzáciu. Server akceptuje
-príkazy `MAIL FROM` a `RCPT TO` bez požiadavky na autentifikáciu a následne
-relayne správu do externého mailového systému.
+nástroja telnet a manuálne vykoná štandardnú SMTP konverzáciu. 
 
 ```
 # terminál/príkazový riadok
@@ -172,11 +170,16 @@ Toto je krok cislo 1 v nasom deme
 QUIT
 ```
 
+Server akceptuje
+príkazy `MAIL FROM` a `RCPT TO` bez požiadavky na autentifikáciu a následne
+relayne správu do externého mailového systému.
+
+![Open relay útok](images/screenshot1.png)
+
 Výsledkom je úspešné doručenie e-mailu do schránky koncového používateľa
 bez akejkoľvek formy overenia odosielateľa. Pri danej konfigurácii môže tento
 typ zneužitia vykonať ktokoľvek s prístupom do siete, v ktorej sa server nachádza.
 
-![Open relay útok](images/screenshot1.png)
 ![Výsledok open relay útoku](images/screenshot2.png)
 
 #### 3.2. Scenár 2 – Vynútenie autentifikácie (AUTH)
@@ -223,8 +226,7 @@ services:
       RELAYHOST_TLS_LEVEL: "encrypt"
 ```
 
-Následne je vytvorený lokálny používateľ v SASL databáze Postfix servera,
-ktorý slúži na simuláciu legitímneho klienta. 
+Následne inicializujeme databázu vo vnútri Postfix kontajnera, na základe ktorej sa vytvorí lokálny používateľ v SASL databáze Postfix servera. Tento používateľ slúži na simuláciu legitímneho SMTP klienta.
   
 ```
 # terminál/príkazový riadok
