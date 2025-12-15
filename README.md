@@ -433,3 +433,66 @@ Výsledky experimentov potvrdzujú, že nesprávna konfigurácia SMTP servera,
 najmä v oblasti relaying politiky, autentifikácie a šifrovania, môže viesť
 k úspešnému zneužitiu aj v prostredí, kde je cieľový e-mailový systém
 konfigurovaný bezpečne.
+
+## Prílohy
+Súčasťou práce je aj videodemonštrácia praktických útokov a ich mitigácie, ktorá dokumentuje jednotlivé scenáre popísané v praktickej časti práce.
+
+Videodemo je dostupné na platforme YouTube:
+[YouTube – videodemonštrácia útokov](https://youtu.be/BMszfbIUGNU)
+
+## Zdroje
+
+1. Klensin, J.  
+   *Simple Mail Transfer Protocol.*  
+   RFC 5321, IETF, 2008.  
+   <https://datatracker.ietf.org/doc/html/rfc5321>
+
+2. Rose, M.  
+   *Simple Mail Transfer Protocol.*  
+   RFC 821, IETF, 1982.  
+   <https://datatracker.ietf.org/doc/html/rfc821>
+
+3. Myers, J.  
+   *SMTP Service Extension for Authentication.*  
+   RFC 4954, IETF, 2007.  
+   <https://datatracker.ietf.org/doc/html/rfc4954>
+
+4. Hoffman, P.  
+   *SMTP Service Extension for Secure SMTP over Transport Layer Security (TLS).*  
+   RFC 3207, IETF, 2002.  
+   <https://datatracker.ietf.org/doc/html/rfc3207>
+
+5. Rescorla, E.  
+   *The Transport Layer Security (TLS) Protocol Version 1.3.*  
+   RFC 8446, IETF, 2018.  
+   <https://datatracker.ietf.org/doc/html/rfc8446>
+
+6. Postfix Project  
+   *Postfix SMTP Server – Official Documentation.*  
+   <https://www.postfix.org/documentation.html>
+
+7. Postfix Project  
+   *SMTP Authentication (SASL) – Postfix SASL Howto.*  
+   <https://www.postfix.org/SASL_README.html>
+
+8. Docker, Inc.  
+   *Docker Compose – Official Documentation.*  
+   <https://docs.docker.com/compose/>
+
+9.  Boky  
+    *boky/postfix – Docker Image Documentation.*  
+    <https://hub.docker.com/r/boky/postfix>
+
+10. Google  
+    *Send email from a printer, scanner, or app (Gmail SMTP).*  
+    <https://support.google.com/mail/answer/7126229>
+
+11. Wireshark Foundation  
+    *Wireshark User’s Guide.*  
+    <https://www.wireshark.org/docs/>
+
+12. Mozilla Foundation  
+    *Thunderbird – Email Client Documentation.*  
+    <https://support.mozilla.org/en-US/products/thunderbird>
+
+
