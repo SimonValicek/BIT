@@ -442,8 +442,6 @@ Videodemo je dostupné na platforme YouTube:
 
 ## Zdroje
 
-## Zdroje
-
 1. RFC 5321 – Simple Mail Transfer Protocol.  
    Klensin, J., IETF, 2008.  
    https://datatracker.ietf.org/doc/html/rfc5321
