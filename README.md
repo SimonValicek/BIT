@@ -442,57 +442,47 @@ Videodemo je dostupné na platforme YouTube:
 
 ## Zdroje
 
-1. Klensin, J.  
-   *Simple Mail Transfer Protocol.*  
-   RFC 5321, IETF, 2008.  
-   <https://datatracker.ietf.org/doc/html/rfc5321>
+## Zdroje
 
-2. Rose, M.  
-   *Simple Mail Transfer Protocol.*  
-   RFC 821, IETF, 1982.  
-   <https://datatracker.ietf.org/doc/html/rfc821>
+1. RFC 5321 – Simple Mail Transfer Protocol.  
+   Klensin, J., IETF, 2008.  
+   https://datatracker.ietf.org/doc/html/rfc5321
 
-3. Myers, J.  
-   *SMTP Service Extension for Authentication.*  
-   RFC 4954, IETF, 2007.  
-   <https://datatracker.ietf.org/doc/html/rfc4954>
+2. RFC 821 – Simple Mail Transfer Protocol.  
+   Rose, M., IETF, 1982.  
+   https://datatracker.ietf.org/doc/html/rfc821
 
-4. Hoffman, P.  
-   *SMTP Service Extension for Secure SMTP over Transport Layer Security (TLS).*  
-   RFC 3207, IETF, 2002.  
-   <https://datatracker.ietf.org/doc/html/rfc3207>
+3. RFC 4954 – SMTP Service Extension for Authentication.  
+   Myers, J., IETF, 2007.  
+   https://datatracker.ietf.org/doc/html/rfc4954
 
-5. Rescorla, E.  
-   *The Transport Layer Security (TLS) Protocol Version 1.3.*  
-   RFC 8446, IETF, 2018.  
-   <https://datatracker.ietf.org/doc/html/rfc8446>
+4. RFC 3207 – SMTP Service Extension for Secure SMTP over Transport Layer Security (TLS).  
+   Hoffman, P., IETF, 2002.  
+   https://datatracker.ietf.org/doc/html/rfc3207
 
-6. Postfix Project  
-   *Postfix SMTP Server – Official Documentation.*  
-   <https://www.postfix.org/documentation.html>
+5. RFC 8446 – The Transport Layer Security (TLS) Protocol Version 1.3.  
+   Rescorla, E., IETF, 2018.  
+   https://datatracker.ietf.org/doc/html/rfc8446
 
-7. Postfix Project  
-   *SMTP Authentication (SASL) – Postfix SASL Howto.*  
-   <https://www.postfix.org/SASL_README.html>
+6. Postfix Project – Postfix SMTP Server Documentation.  
+   https://www.postfix.org/documentation.html
 
-8. Docker, Inc.  
-   *Docker Compose – Official Documentation.*  
-   <https://docs.docker.com/compose/>
+7. Postfix Project – SMTP Authentication (SASL) Configuration.  
+   https://www.postfix.org/SASL_README.html
 
-9.  Boky  
-    *boky/postfix – Docker Image Documentation.*  
-    <https://hub.docker.com/r/boky/postfix>
+8. Docker, Inc. – Docker Compose Documentation.  
+   https://docs.docker.com/compose/
 
-10. Google  
-    *Send email from a printer, scanner, or app (Gmail SMTP).*  
-    <https://support.google.com/mail/answer/7126229>
+9.  Boky – Postfix Docker Image (boky/postfix).  
+    https://hub.docker.com/r/boky/postfix
 
-11. Wireshark Foundation  
-    *Wireshark User’s Guide.*  
-    <https://www.wireshark.org/docs/>
+10. Google – Gmail SMTP Server Configuration.  
+    https://support.google.com/mail/answer/7126229
 
-12. Mozilla Foundation  
-    *Thunderbird – Email Client Documentation.*  
-    <https://support.mozilla.org/en-US/products/thunderbird>
+11. Wireshark Foundation – Wireshark User’s Guide.  
+    https://www.wireshark.org/docs/
+
+12. Mozilla Foundation – Thunderbird Documentation.  
+    https://support.mozilla.org/en-US/products/thunderbird
 
 
