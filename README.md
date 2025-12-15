@@ -28,30 +28,49 @@ Cieľom testovacieho prostredia je simulovať realistický scenár SMTP komunik�
 - SMTP server následne relaye správu do reálneho e-mailového systému
 - demonštruje sa, že slabina v prvom kroku môže viesť k doručeniu e-mailu koncovému používateľovi
 #### 1.2. Logická architektúra
+Pre účely demonštrácie bezpečnostných slabín SMTP protokolu je testovacie
+prostredie navrhnuté tak, aby Postfix server vystupoval voči cieľovému
+mailovému systému (Gmail) v roli SMTP klienta, nie ako plnohodnotný
+server-to-server MTA.
+
+Ak by Postfix v tomto scenári fungoval ako verejne dostupný SMTP server,
+bolo by nevyhnutné riešiť ďalšie mechanizmy, ako sú verejná IP adresa,
+PTR záznamy, SPF a DKIM politiky, reputácia servera a ďalšie ochranné
+mechanizmy používané modernými poskytovateľmi e-mailových služieb.
+Tieto mechanizmy by výrazne ovplyvnili výsledky experimentov a znemožnili
+jednoznačnú demonštráciu slabín samotného SMTP protokolu.
 ```
-                                        ┌──────────────────┐
-                                        │ Klient / Útočník │
-                                        │     (telnet)     │
-                                        └─────────┬────────┘
-                                                  │ SMTP (587)
-                                                  │ (bez TLS / bez AUTH / zlá politika)
-                                                  ▼
-                                        ┌──────────────────┐
-                                        │ Postfix SMTP MTA │
-                                        │     (Docker)     │
-                                        └─────────┬────────┘
-                                                  │ SMTP + TLS
-                                                  │  (relay)
-                                                  ▼
-                                        ┌──────────────────┐
-                                        │smtp.gmail.com:587│
-                                        │    (bezpečné)    │
-                                        └─────────┬────────┘
-                                                  ▼
-                                        ┌──────────────────┐
-                                        │  Inbox príjemcu  │
-                                        │    (Gmail UI)    │
-                                        └──────────────────┘
+REÁLNE PROSTREDIE (server ↔ server)           LAB SCENÁR (klient → Postfix → Gmail)
+
+┌──────────────────┐                         ┌──────────────────┐
+│  Mailový klient  │                         │ Klient / Útočník │
+│ (Outlook, web)   │                         │     (telnet)     │
+└─────────┬────────┘                         └─────────┬────────┘
+          │ SMTP (587)                                 │ SMTP (587)
+          │                                            │ 
+          ▼                                            ▼
+┌──────────────────┐                         ┌──────────────────┐
+│   SMTP server    │                         │ Postfix SMTP MTA │
+│                  │                         │    (Docker)      │
+└─────────┬────────┘                         └─────────┬────────┘
+          │ server ↔ server SMTP (port 25)             │ klient → server SMTP (port 587)
+          │ bez loginu                                 │ AUTH (gmail účet)
+          │                                            │
+          │ Overenie:                                  │ Overenie:
+          │ - verejná IP                               │ - SMTP AUTH (login/heslo)
+          │ - PTR / SPF                                │ - STARTTLS
+          │ - DKIM                                     │
+          │ - reputácia                                │
+          ▼                                            ▼
+┌──────────────────┐                         ┌──────────────────┐
+│ SMTP server      │                         │ smtp.gmail.com   │
+│                  │                         │      :587        │
+└─────────┬────────┘                         └─────────┬────────┘
+          ▼                                            ▼
+┌──────────────────┐                         ┌──────────────────┐
+│ Príjemca e-mailu │                         │ Inbox príjemcu   │
+│                  │                         │   (Gmail UI)     │
+└──────────────────┘                         └──────────────────┘
 ```
 ### 2. Použité technológie a nástroje
 #### 2.1. Docker Compose
@@ -86,7 +105,7 @@ Wireshark bol použitý na:
 - demonštráciu plaintext prenosu údajov
 - porovnanie komunikácie pred a po zapnutí TLS
 
-#### 2.6. Mozzila Thunderbird
+#### 2.6. Mozilla Thunderbird
 Mozilla Thunderbird bol použitý ako plnohodnotný e-mailový klient na simuláciu
 legitímneho používateľa, ktorý sa autentifikuje voči SMTP serveru pomocou mena
 a hesla.
@@ -113,7 +132,6 @@ services:
       # Spam friendly
       ALLOW_EMPTY_SENDER_DOMAINS: "yes"
 
-      # TRUST TOO MUCH → weakness (ask ChatGPT if weakness or vulnerability)
       POSTFIX_mynetworks: "192.168.0.0/16, 172.16.0.0/12, 172.18.0.0/16"
 
       # Classic open relay logic
@@ -252,18 +270,19 @@ Vráti nás to s chybou, že sa musíme overiť.
 ![Pokus prihlásenia sa bez overenia po vynútení autentifikácie serverom](images/screenshot3.png)
 
 Pokúsime sa teda, prihlásiť pomocou údajov, ktoré sme si vytvorili vyššie v databáze vo vnútri kontajnera.
-V našom prípade, to budú údaje username:password → mario:krokodil123. Na prihlásenie sa do účtu použijeme klienta Mozilla Thunderbird. Návod, ako sa prihlásiť do klienta nájdeme [tu](manuals/README.md)
+V našom prípade, to budú údaje username:password → mario:krokodil123. Na prihlásenie sa do účtu použijeme klienta Mozilla Thunderbird. 
 
 Po úspešnom prihlásení sa do Mozilly Thunderbird, pošleme skúšobný mail.
 
-![Email z Mozzila Thunderbird → Postfix → smtp.gmail:587 → xvaliceks inbox](images/screenshot9.png)
+![Email z Mozilla Thunderbird → Postfix → smtp.gmail:587 → xvaliceks inbox](images/screenshot9.png)
 
-Ako vidíme na obrázku vyššie, e-mail bol po autentifikácii odoslaný úspešne. Teraz sa pokúsime simulovať správanie útočníka a odchytiť nešifrovaný komunikáciu, spolu s prihlasovacími údajmi.
+Ako vidíme na obrázku vyššie, e-mail bol po autentifikácii odoslaný úspešne. Teraz sa pokúsime simulovať správanie útočníka a odchytiť nešifrovanú komunikáciu, spolu s prihlasovacími údajmi.
 
 Otvoríme si Wireshark, vyberieme príslušnú sieť a zadáme filter **smtp || tcp.port == 587**
 
 ![Zachytené username v plaintexte vo Wiresharku](images/screenshot6.png)
 ![Zachytené password v plaintexte vo Wiresharku](images/screenshot7.png)
+![Zachytené password v plaintexte vo Wiresharku](images/screenshot8.png)
 
 Tieto údaje sú zakódované v base64, čo nám ale vôbec nevadí, nakoľko ich budeme prostredníctvom telnetu zakódované zadávať do terminálu. Pre demonštráciu toho, že sa jedná o tie isté údaje, si ich však dekódujeme.
 
@@ -300,6 +319,12 @@ QUIT
 
 
 #### 3.3. Scenár 3 – Chýbajúce TLS (cleartext credentials)
+V tomto kroku sa zameriavame na vynútenie šifrovania SMTP komunikácie pomocou TLS.
+Cieľom je zabrániť autentifikácii používateľa v prípade, že spojenie nie je
+zabezpečené mechanizmom STARTTLS.
+
+V nasledujúcej konfigurácii je TLS povinné pre SMTP submission službu (port 587)
+a autentifikácia je povolená až po úspešnom nadviazaní šifrovaného spojenia.
 ```
 services:
   postfix:
@@ -307,58 +332,65 @@ services:
     container_name: postfix-gmail
     restart: unless-stopped
     ports:
-      - "25:25"
       - "587:587"
     environment:
       # Spam friendly
       ALLOW_EMPTY_SENDER_DOMAINS: "yes"
 
-      POSTFIX_mynetworks: "127.0.0.0/8, 172.16.0.0/12"
+      POSTFIX_mynetworks: "192.168.0.0/16, 127.0.0.0/8, 172.16.0.0/12"
 
-      # Require SMTP authentication
+      # GLOBAL smtpd settings
       POSTFIX_smtpd_sasl_auth_enable: "yes"
-      POSTFIX_smtpd_sasl_security_options: "noanonymous"
-      POSTFIX_smtpd_sasl_local_domain: ""
+      POSTFIX_smtpd_tls_auth_only: "yes"
+     
+      # Submission service (587)
+      ENABLE_SUBMISSION: "yes"
+      POSTFIX_submission_smtpd_tls_security_level: "encrypt"
+      POSTFIX_submission_smtpd_tls_auth_only: "yes"
+      POSTFIX_submission_smtpd_sasl_auth_enable: "yes"
+      POSTFIX_submission_smtpd_relay_restrictions: "permit_sasl_authenticated,reject"
 
-      # Relay policy: auth required for non-local domains
-      POSTFIX_smtpd_relay_restrictions: "permit_sasl_authenticated,reject_unauth_destination"
-      POSTFIX_smtpd_recipient_restrictions: "permit_mynetworks,permit_sasl_authenticated,reject"
-
-      # Postfix -> Gmail relay settings
+      # Gmail relay
       RELAYHOST: "[smtp.gmail.com]:587"
       RELAYHOST_USERNAME: "${GMAIL_USER}"
       RELAYHOST_PASSWORD: "${GMAIL_PASSWORD}"
-      RELAYHOST_TLS_LEVEL: "encrypt"
+      POSTFIX_smtp_tls_security_level: "encrypt"
+```
 
-      # TLS inbound enforcement
-      SMTPD_USE_TLS: "yes"
-      SMTPD_TLS_SECURITY_LEVEL: "encrypt"
-      ALLOW_INSECURE_AUTH: "false"
+Následne sa opäť pokúsime o rovnaké prihlásenie, čím si overíme, že sa nastavenia aplikovali správne.
 
-      POSTFIX_smtpd_delay_reject: "no"
+```
+# terminál/príkazový riadok
 
+telnet 192.168.0.52 587
 
-      # # Enable SASL authentication
-      # POSTFIX_smtpd_sasl_auth_enable: "yes"
-      # POSTFIX_smtpd_sasl_security_options: "noanonymous"
-      # POSTFIX_smtpd_sasl_local_domain: ""
+EHLO bit.demo
+AUTH LOGIN
+bWFyaW8=
+a3Jva29kaWwxMjM=
+```
 
-      # # Allow relay after authentication
-      # POSTFIX_smtpd_relay_restrictions: "permit_sasl_authenticated,reject_unauth_destination"
+Vidíme, že po inicializovaní konverzácie nedostaneme v odpovedi servera možnosť 250-AUTH. Následne, keď sa napriek tomu pokúsime prihlásiť, dostaneme error. Pokúsime sa teda nadviazať šifrované spojenie, na čo nás telnet odmietne, keďže nie je na to kapacitne vybavený. Skúsime to teda pomocou openssl a porovnáme rozdiely.
+![Telnet - autentifikacie bez STARTTLS -> error.](images/screenshot16.png)
 
-      # POSTFIX_smtpd_recipient_restrictions: "permit_sasl_authenticated,reject"
-      
-      # ALLOW_INSECURE_AUTH: "true"
-      # SMTP_AUTH_METHODS: "plain,login"
+```
+# GitBash
 
-      # Disable TLS inbound
-      # SMTPD_USE_TLS: "no"
+openssl s_client -starttls smtp -connect 192.168.0.52:587
+```
 
+Následne, po nazdviazaní šifrovaného spojenia prostrednísctvom openssl so STARTTLS, vidíme možnosť autentifikácie, ktorá nám bola predtým zahalená.
+![Openssl so STARTTLS.](images/screenshot16.png)
 
-      # AUTH METHODS (TLS not enforced yet)
-      # ALLOW_INSECURE_AUTH: "true"
-      # SMTP_AUTH_METHODS: "plain,login"
-```   
+Opäť sa prihlásime.
+
+```
+AUTH LOGIN
+bWFyaW8=
+a3Jva29kaWwxMjM=
+```
+
+Následne vo Wiresharku vidíme, že komunikácia už prebieha šifrovane pomocou TLSv1.3 a nie je možné jednoducho odchytiť jej obsah ako predtým.
 
 
 ## Záver
