@@ -437,7 +437,7 @@ konfigurovaný bezpečne.
 ## Prílohy
 Súčasťou práce je aj videodemonštrácia praktických útokov a ich mitigácie, ktorá dokumentuje jednotlivé scenáre popísané v praktickej časti práce.
 
-Videodemo je dostupné na platforme YouTube:
+Videodemo je dostupné na platforme 
 [YouTube – videodemonštrácia útokov](https://youtu.be/BMszfbIUGNU)
 
 ## Zdroje
